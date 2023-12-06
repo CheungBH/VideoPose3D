@@ -97,22 +97,14 @@ for parameter in model_pos.parameters():
     model_params += parameter.numel()
 print('INFO: Trainable parameter count:', model_params)
 
-if torch.cuda.is_available():
-    model_pos = model_pos.cuda()
+# if torch.cuda.is_available():
+model_pos = model_pos.cuda()
 
 if args.resume or args.evaluate:
     chk_filename = os.path.join(args.checkpoint, args.resume if args.resume else args.evaluate)
     print('Loading checkpoint', chk_filename)
     checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage)
-    print('This model was trained for ')
     model_pos.load_state_dict(checkpoint['model_pos'])
-    model_traj = None
-
-test_generator = UnchunkedGenerator(cameras_valid, poses_valid, poses_valid_2d,
-                                    pad=pad, causal_shift=causal_shift, augment=False,
-                                    kps_left=kps_left, kps_right=kps_right, joints_left=joints_left,
-                                    joints_right=joints_right)
-print('INFO: Testing on {} frames'.format(test_generator.num_frames()))
 
 
 if args.render:
@@ -126,7 +118,7 @@ if args.render:
 
     with torch.no_grad():
         model_pos.eval()
-        N = 0
+        # N = 0
         for _, batch, batch_2d in gen.next_epoch():
             inputs_2d = torch.from_numpy(batch_2d.astype('float32'))
             if torch.cuda.is_available():
